@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Podgląd UI — YouTube → Resolve</title>
+    <!-- ten sam CSS co w prawdziwej wtyczce -->
+    <link rel="stylesheet" href="../com.bartoszkwiatek.yt2resolve/css/styles.css?v=4">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand"><span class="logo">&#9654;</span> YouTube <span class="arrow">&#8594;</span> Resolve</div>
+        <div class="status">
+            <div id="langSwitch" class="lang">
+                <button type="button" class="lang-btn" data-lang="en">EN</button>
+                <button type="button" class="lang-btn" data-lang="pl">PL</button>
+            </div>
+            <span id="projectChip" class="chip">Project: &mdash;</span>
+            <span id="toolsChip" class="chip">tools&hellip;</span>
+        </div>
+    </header>
+
+    <section class="searchbar">
+        <input id="searchInput" type="text" data-i18n-ph="searchPh" placeholder="Search YouTube&hellip;" autocomplete="off" spellcheck="false">
+        <button id="searchBtn" class="btn btn-primary" data-i18n="searchBtn">Search</button>
+    </section>
+
+    <section class="subbar">
+        <label><span data-i18n="binLabel">Import to bin:</span>
+            <input id="binInput" type="text" data-i18n-ph="binPh" placeholder="(current bin)" autocomplete="off" spellcheck="false">
+        </label>
+        <span class="hint" data-i18n="filesHint">Files: ~/Movies/YouTube to Resolve/&lt;project&gt;</span>
+    </section>
+
+    <main id="results" class="results">
+        <div class="empty" data-i18n="emptyState">Type a query and hit Search to see YouTube results.</div>
+    </main>
+
+    <footer class="legal" data-i18n="legal">Only download material you have the rights to (your own, Creative Commons, licensed).</footer>
+
+    <!-- ATRAPA backendu: udaje window.api z preload.js, żeby przetestować UI bez Resolve -->
+    <script>
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+        const SAMPLE = [
+            { id: '9bZkp7q19f0', title: 'Spokojne lofi beaty do nauki i pracy — 1 godzina', url: 'u1', duration: 3610, durationStr: '1:00:10', uploader: 'Chill Studio', thumbnail: 'https://i.ytimg.com/vi/9bZkp7q19f0/mqdefault.jpg' },
+            { id: 'kJQP7kiw5Fk', title: 'Dron 4K nad górami — materiał bez praw autorskich (Creative Commons)', url: 'u2', duration: 253, durationStr: '4:13', uploader: 'Nature Footage', thumbnail: 'https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg' },
+            { id: 'jNQXAC9IVRw', title: 'Krótki przykładowy klip testowy', url: 'u3', duration: 19, durationStr: '0:19', uploader: 'Test Channel', thumbnail: 'https://i.ytimg.com/vi/jNQXAC9IVRw/mqdefault.jpg' },
+            { id: '3JZ_D3ELwOQ', title: 'Ambientowa muzyka tła do vlogów i montażu', url: 'u4', duration: 264, durationStr: '4:24', uploader: 'Royalty Free Music', thumbnail: 'https://i.ytimg.com/vi/3JZ_D3ELwOQ/mqdefault.jpg' },
+            { id: 'dQw4w9WgXcQ', title: 'Timelapse miasta nocą — ujęcia stockowe', url: 'u5', duration: 213, durationStr: '3:33', uploader: 'City B-roll', thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg' },
+        ];
+        window.api = {
+            _p: [], _d: [], _e: [],
+            async search() { await sleep(250); return SAMPLE; },
+            async getFormats() {
+                await sleep(350);
+                return { id: 'x', title: 'Przykład', duration: 253, durationStr: '4:13', uploader: 'Kanał', thumbnail: '', heights: [2160, 1440, 1080, 720, 480, 360], hasAudio: true };
+            },
+            async currentProject() { return 'Test'; },
+            async checkTools() { return { ytdlp: '/opt/homebrew/bin/yt-dlp', ffmpeg: '/opt/homebrew/bin/ffmpeg' }; },
+            async revealFile(p) { console.log('reveal', p); },
+            onProgress(cb) { this._p.push(cb); },
+            onDone(cb) { this._d.push(cb); },
+            onError(cb) { this._e.push(cb); },
+            async download(job) {
+                const emitP = (o) => this._p.forEach((cb) => cb({ jobId: job.jobId, ...o }));
+                const emitD = (o) => this._d.forEach((cb) => cb({ jobId: job.jobId, ...o }));
+                for (let pass = 0; pass < 2; pass++) {
+                    for (let p = 0; p <= 100; p += 8) {
+                        const pp = Math.min(100, p);
+                        emitP({ percent: pp, percentStr: pp.toFixed(1) + '%', speed: (2 + Math.random() * 3).toFixed(2) + 'MiB/s', eta: '00:0' + Math.max(0, Math.round((100 - pp) / 25)) });
+                        await sleep(70);
+                    }
+                }
+                emitD({ filePath: '/Users/x/Movies/YouTube to Resolve/Test/Przykład [abc123].mp4', imported: 1, importError: null });
+                return { ok: true };
+            },
+        };
+    </script>
+    <!-- ten sam renderer.js co w prawdziwej wtyczce -->
+    <script src="../com.bartoszkwiatek.yt2resolve/renderer.js?v=4"></script>
+    <!-- automatyczne wyszukanie po załadowaniu, żeby od razu było co oglądać -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.getElementById('searchInput').value = 'lofi hip hop';
+                document.getElementById('searchBtn').click();
+            }, 60);
+        });
+    </script>
+</body>
+</html>

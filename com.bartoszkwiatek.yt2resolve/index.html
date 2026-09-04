@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YouTube -&gt; Resolve</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand"><span class="logo">&#9654;</span> YouTube <span class="arrow">&#8594;</span> Resolve</div>
+        <div class="status">
+            <div id="langSwitch" class="lang">
+                <button type="button" class="lang-btn" data-lang="en">EN</button>
+                <button type="button" class="lang-btn" data-lang="pl">PL</button>
+            </div>
+            <span id="projectChip" class="chip">Project: &mdash;</span>
+            <span id="toolsChip" class="chip">tools&hellip;</span>
+        </div>
+    </header>
+
+    <section class="searchbar">
+        <input id="searchInput" type="text" data-i18n-ph="searchPh" placeholder="Search YouTube&hellip;" autocomplete="off" spellcheck="false">
+        <button id="searchBtn" class="btn btn-primary" data-i18n="searchBtn">Search</button>
+    </section>
+
+    <section class="subbar">
+        <label><span data-i18n="binLabel">Import to bin:</span>
+            <input id="binInput" type="text" data-i18n-ph="binPh" placeholder="(current bin)" autocomplete="off" spellcheck="false">
+        </label>
+        <span class="hint" data-i18n="filesHint">Files: ~/Movies/YouTube to Resolve/&lt;project&gt;</span>
+    </section>
+
+    <main id="results" class="results">
+        <div class="empty" data-i18n="emptyState">Type a query and hit Search to see YouTube results.</div>
+    </main>
+
+    <footer class="legal" data-i18n="legal">Only download material you have the rights to (your own, Creative Commons, licensed).</footer>
+
+    <script src="./renderer.js"></script>
+</body>
+</html>
