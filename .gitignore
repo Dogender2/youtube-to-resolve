@@ -2,6 +2,9 @@
 # The installer (install.sh / install.ps1) copies it from the local Resolve install.
 com.bartoszkwiatek.yt2resolve/WorkflowIntegration.node
 
+# Downloaded binaries (installer fetches yt-dlp/ffmpeg into the plugin's bin/)
+com.bartoszkwiatek.yt2resolve/bin/
+
 # Node / OS junk
 node_modules/
 .DS_Store

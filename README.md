@@ -13,8 +13,9 @@ project — right inside Resolve.
 > Service and copyright. Only download material you have the rights to (your own,
 > Creative Commons, or licensed). You are responsible for how you use this tool.
 
-> 🧩 **Before it works you must install two free command-line tools — `yt-dlp` and `ffmpeg`**
-> (see **Requirements** below). The plugin shows a red banner if they are missing.
+> 🧩 **Needs two free tools — `yt-dlp` and `ffmpeg`.** On **Windows the one-click installer sets
+> them up for you**; on macOS install them once (see **Requirements**). The plugin shows a red
+> banner if they're missing.
 
 *Interface is English by default with an EN/PL switch. — Interfejs po angielsku, z przełącznikiem EN/PL. **Polski opis niżej.***
 
@@ -51,21 +52,31 @@ bash install.sh
 ```
 Then restart DaVinci Resolve → **Workspace → Workflow Integrations → YouTube → Resolve**.
 
-### Install — Windows
+### Install — Windows (one click)
+Download **[`install-windows.bat`](install-windows.bat)**, double-click it, and approve the admin
+prompt. It downloads the plugin, `yt-dlp` and `ffmpeg`, and installs everything. Then restart
+Resolve → **Workspace → Workflow Integrations → YouTube → Resolve**.
+
+Prefer PowerShell? Paste this into an **Administrator** PowerShell window:
+```powershell
+iwr -useb https://raw.githubusercontent.com/Dogender2/youtube-to-resolve/main/tools/install-windows.ps1 | iex
+```
+
+<details><summary>Manual install from a clone (advanced)</summary>
+
+Install `yt-dlp` + `ffmpeg` yourself (see Requirements), then:
 ```powershell
 git clone https://github.com/Dogender2/youtube-to-resolve.git
 cd youtube-to-resolve
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
-Run PowerShell **as Administrator** if writing to `ProgramData` is blocked. Then restart
-Resolve → **Workspace → Workflow Integrations → YouTube → Resolve**.
+</details>
 
 > **Note:** `WorkflowIntegration.node` (Blackmagic's proprietary native bridge) is **not**
 > shipped in this repo. The installer copies it automatically from your local Resolve
 > install — which also guarantees the correct OS/architecture build.
 >
-> Windows support is implemented but has only been tested on macOS so far — please
-> [open an issue](../../issues) if something misbehaves.
+> Tested on macOS and Windows — please [open an issue](../../issues) if anything misbehaves.
 
 ### Usage
 1. Open the plugin, type a query, hit **Search**.
@@ -151,21 +162,31 @@ bash install.sh
 ```
 Uruchom ponownie DaVinci Resolve → **Workspace → Workflow Integrations → YouTube → Resolve**.
 
-### Instalacja — Windows
+### Instalacja — Windows (jednym kliknięciem)
+Pobierz **[`install-windows.bat`](install-windows.bat)**, kliknij dwukrotnie i zatwierdź prośbę o
+uprawnienia administratora. Instalator pobierze wtyczkę, `yt-dlp` i `ffmpeg` i wszystko zainstaluje.
+Potem zrestartuj Resolve → **Workspace → Workflow Integrations → YouTube → Resolve**.
+
+Wolisz PowerShell? Wklej to w oknie PowerShell **jako Administrator**:
+```powershell
+iwr -useb https://raw.githubusercontent.com/Dogender2/youtube-to-resolve/main/tools/install-windows.ps1 | iex
+```
+
+<details><summary>Instalacja ręczna z klona (zaawansowane)</summary>
+
+Zainstaluj samodzielnie `yt-dlp` + `ffmpeg` (patrz Wymagania), potem:
 ```powershell
 git clone https://github.com/Dogender2/youtube-to-resolve.git
 cd youtube-to-resolve
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
-Uruchom PowerShell **jako Administrator**, jeśli zapis do `ProgramData` jest blokowany.
-Potem zrestartuj Resolve → **Workspace → Workflow Integrations → YouTube → Resolve**.
+</details>
 
 > **Uwaga:** `WorkflowIntegration.node` (własnościowy mostek Blackmagic) **nie** jest
 > dołączony do repo. Instalator kopiuje go automatycznie z Twojej lokalnej instalacji
 > Resolve (dzięki temu zawsze pasuje do systemu/architektury).
 >
-> Wersja na Windows jest przygotowana, ale testowana była tylko na macOS — jeśli coś
-> nie zadziała, [zgłoś issue](../../issues).
+> Testowana na macOS i Windows — jeśli coś nie działa, [zgłoś issue](../../issues).
 
 ### Użycie
 1. Otwórz wtyczkę, wpisz zapytanie, kliknij **Szukaj**.
