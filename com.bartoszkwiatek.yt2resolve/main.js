@@ -3,7 +3,7 @@
 // UI (renderer) rozmawia z tym plikiem wyłącznie przez IPC zdefiniowane w preload.js.
 'use strict';
 
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const os = require('os');
 const WorkflowIntegration = require('./WorkflowIntegration.node');
@@ -73,13 +73,14 @@ async function importToResolve(filePath, binName) {
 function sanitize(s) {
     return (String(s).replace(/[\/:*?"<>|]/g, '_').trim()) || 'Projekt';
 }
-function downloadDir(projName) {
+function defaultDownloadBase() {
     // ~/Movies na macOS, ~/Videos na Windows — Electron mapuje 'videos' na właściwy folder OS.
-    let root;
-    try { root = app.getPath('videos'); } catch { root = os.homedir(); }
-    let base = path.join(root, 'YouTube to Resolve');
-    if (projName) base = path.join(base, sanitize(projName));
-    return base;
+    try { return path.join(app.getPath('videos'), 'YouTube to Resolve'); }
+    catch { return path.join(os.homedir(), 'YouTube to Resolve'); }
+}
+function downloadDir(projName, customBase) {
+    const base = (customBase && String(customBase).trim()) ? customBase : defaultDownloadBase();
+    return projName ? path.join(base, sanitize(projName)) : base;
 }
 
 // ---------- IPC ----------
@@ -105,6 +106,16 @@ function registerIpc() {
         return true;
     });
 
+    ipcMain.handle('app:defaultDownloadDir', () => defaultDownloadBase());
+
+    ipcMain.handle('app:chooseFolder', async () => {
+        const res = await dialog.showOpenDialog(mainWindow, {
+            title: 'Choose download folder',
+            properties: ['openDirectory', 'createDirectory'],
+        });
+        return (res.canceled || !res.filePaths || !res.filePaths[0]) ? null : res.filePaths[0];
+    });
+
     // Pobranie + import. Postęp/wynik lecą jako zdarzenia z jobId.
     ipcMain.handle('yt:download', async (_e, job) => {
         const send = (channel, payload) => {
@@ -114,7 +125,7 @@ function registerIpc() {
         };
         try {
             const projName = await currentProjectName();
-            const dir = downloadDir(projName);
+            const dir = downloadDir(projName, job.downloadDir);
             const filePath = await ytdlp.download(job.url, job.spec, dir, (pu) => send('yt:progress', pu));
 
             let imported = 0;
@@ -142,7 +153,7 @@ function createWindow() {
         minWidth: 380,
         minHeight: 480,
         useContentSize: true,
-        backgroundColor: '#1b1b1d',
+        backgroundColor: '#0b0d0b',
         alwaysOnTop: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),

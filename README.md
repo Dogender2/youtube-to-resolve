@@ -26,7 +26,9 @@ project — right inside Resolve.
 - Live download progress (%, speed, ETA).
 - The finished file is imported into the **current bin** of the open project.
 
-Files are saved to your `Videos`/`Movies` folder → `YouTube to Resolve/<project>/`.
+Files are saved to your `Videos`/`Movies` folder → `YouTube to Resolve/<project>/` by
+default. You can pick a different **download folder** in Settings (⚙); the choice is
+remembered between launches, just like the language.
 
 ### Requirements
 - **DaVinci Resolve Studio** (Workflow Integrations is a Studio-only feature).
@@ -91,7 +93,9 @@ If this saved you money on a paid plugin, you can buy me a coffee 🙂
 - Pasek postępu na żywo (%, prędkość, ETA).
 - Gotowy plik trafia do **bieżącego bina** otwartego projektu.
 
-Pliki zapisywane są w folderze `Wideo`/`Filmy` → `YouTube to Resolve/<projekt>/`.
+Pliki zapisywane są domyślnie w folderze `Wideo`/`Filmy` → `YouTube to Resolve/<projekt>/`.
+Możesz wybrać inny **folder pobierania** w Ustawieniach (⚙); wybór jest zapamiętywany
+między uruchomieniami — tak jak język.
 
 ### Wymagania
 - **DaVinci Resolve Studio** (Workflow Integrations to funkcja Studio).

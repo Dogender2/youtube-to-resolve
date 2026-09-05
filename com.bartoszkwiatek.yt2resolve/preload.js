@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('api', {
     currentProject: () => ipcRenderer.invoke('app:currentProject'),
     checkTools: () => ipcRenderer.invoke('app:checkTools'),
     revealFile: (filePath) => ipcRenderer.invoke('app:revealFile', filePath),
+    defaultDownloadDir: () => ipcRenderer.invoke('app:defaultDownloadDir'),
+    chooseFolder: () => ipcRenderer.invoke('app:chooseFolder'),
 
     // Zdarzenia strumieniowe (proces główny -> UI), rozróżniane po jobId
     onProgress: (cb) => ipcRenderer.on('yt:progress', (_e, data) => cb(data)),

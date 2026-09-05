@@ -34,6 +34,11 @@ const I18N = {
         errorPrefix: 'Error: ',
         unknown: 'unknown',
         showFile: 'Show file',
+        folderLabel: 'Download folder',
+        folderChange: 'Change…',
+        folderReset: 'Default',
+        folderDefaultPrefix: 'Default: ',
+        settingsTitle: 'Settings',
     },
     pl: {
         searchPh: 'Szukaj na YouTube…',
@@ -66,6 +71,11 @@ const I18N = {
         errorPrefix: 'Błąd: ',
         unknown: 'nieznany',
         showFile: 'Pokaż plik',
+        folderLabel: 'Folder pobierania',
+        folderChange: 'Zmień…',
+        folderReset: 'Domyślny',
+        folderDefaultPrefix: 'Domyślny: ',
+        settingsTitle: 'Ustawienia',
     },
 };
 const LANG_KEY = 'yt2resolve.lang';
@@ -139,6 +149,46 @@ function applyStaticI18n() {
     document.querySelectorAll('[data-i18n-ph]').forEach((node) => {
         node.placeholder = t(node.dataset.i18nPh);
     });
+    document.querySelectorAll('[data-i18n-title]').forEach((node) => {
+        node.title = t(node.dataset.i18nTitle);
+    });
+}
+
+// ---------- Ustawienia (folder pobierania, bin) — zapisywane jak język ----------
+const DL_DIR_KEY = 'yt2resolve.downloadDir';
+const BIN_KEY = 'yt2resolve.binName';
+let defaultDownloadDir = '';
+
+function lsGet(key) { try { return localStorage.getItem(key) || ''; } catch { return ''; } }
+function lsSet(key, val) { try { if (val) localStorage.setItem(key, val); else localStorage.removeItem(key); } catch { /* ignore */ } }
+
+function renderFolder() {
+    const node = byId('folderPath');
+    if (!node) return;
+    const custom = lsGet(DL_DIR_KEY);
+    if (custom) {
+        node.textContent = custom;
+        node.title = custom;
+        node.classList.remove('is-default');
+    } else {
+        node.textContent = t('folderDefaultPrefix') + (defaultDownloadDir || '…');
+        node.title = defaultDownloadDir;
+        node.classList.add('is-default');
+    }
+    const reset = byId('folderReset');
+    if (reset) reset.disabled = !custom;
+}
+
+async function chooseFolder() {
+    try {
+        const picked = await window.api.chooseFolder();
+        if (picked) { lsSet(DL_DIR_KEY, picked); renderFolder(); }
+    } catch { /* ignore */ }
+}
+function resetFolder() { lsSet(DL_DIR_KEY, ''); renderFolder(); }
+function toggleSettings() {
+    byId('settings').classList.toggle('open');
+    byId('settingsBtn').classList.toggle('active');
 }
 function updateLangButtons() {
     document.querySelectorAll('#langSwitch .lang-btn').forEach((b) => {
@@ -151,6 +201,7 @@ function setLanguage(lang) {
     saveLang(lang);
     updateLangButtons();
     applyStaticI18n();
+    renderFolder();
     refreshProject();
     refreshTools();
     // Odśwież wyniki (przetłumacz przyciski/panele), o ile nic się nie pobiera.
@@ -166,6 +217,16 @@ async function init() {
     document.querySelectorAll('#langSwitch .lang-btn').forEach((b) => {
         b.addEventListener('click', () => setLanguage(b.dataset.lang));
     });
+
+    // Ustawienia (folder + bin)
+    try { defaultDownloadDir = await window.api.defaultDownloadDir(); } catch { /* ignore */ }
+    byId('settingsBtn').addEventListener('click', toggleSettings);
+    byId('folderChange').addEventListener('click', chooseFolder);
+    byId('folderReset').addEventListener('click', resetFolder);
+    const binInput = byId('binInput');
+    binInput.value = lsGet(BIN_KEY);
+    binInput.addEventListener('input', () => lsSet(BIN_KEY, binInput.value.trim()));
+    renderFolder();
 
     byId('searchBtn').addEventListener('click', doSearch);
     byId('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
@@ -337,7 +398,8 @@ function startDownload(item, panel, spec) {
     jobs.set(jobId, { fill, pctText, info, panel, item });
 
     const binName = byId('binInput').value.trim();
-    window.api.download({ jobId, url: item.url, spec, binName }).catch(() => { /* obsłużone przez onError */ });
+    const dlDir = lsGet(DL_DIR_KEY);
+    window.api.download({ jobId, url: item.url, spec, binName, downloadDir: dlDir }).catch(() => { /* obsłużone przez onError */ });
 }
 
 function onProgress(d) {
