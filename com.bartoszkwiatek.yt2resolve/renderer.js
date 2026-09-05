@@ -39,6 +39,9 @@ const I18N = {
         folderReset: 'Default',
         folderDefaultPrefix: 'Default: ',
         settingsTitle: 'Settings',
+        error403: 'HTTP 403 — yt-dlp is out of date. Update it and try again (see README).',
+        toolsBannerTitle: '⚠ Extra tools required',
+        toolsBannerBody: 'This plugin needs yt-dlp and ffmpeg installed:\nmacOS:  brew install yt-dlp ffmpeg\nWindows:  winget install yt-dlp.yt-dlp  then  winget install Gyan.FFmpeg',
     },
     pl: {
         searchPh: 'Szukaj na YouTube…',
@@ -76,6 +79,9 @@ const I18N = {
         folderReset: 'Domyślny',
         folderDefaultPrefix: 'Domyślny: ',
         settingsTitle: 'Ustawienia',
+        error403: 'HTTP 403 — yt-dlp jest nieaktualny. Zaktualizuj go i spróbuj ponownie (patrz README).',
+        toolsBannerTitle: '⚠ Wymagane dodatkowe programy',
+        toolsBannerBody: 'Ta wtyczka wymaga zainstalowanych yt-dlp i ffmpeg:\nmacOS:  brew install yt-dlp ffmpeg\nWindows:  winget install yt-dlp.yt-dlp  potem  winget install Gyan.FFmpeg',
     },
 };
 const LANG_KEY = 'yt2resolve.lang';
@@ -258,6 +264,20 @@ async function refreshTools() {
         chip.classList.toggle('chip-ok', ok);
         chip.classList.toggle('chip-err', !ok);
         chip.title = `yt-dlp: ${info.ytdlp || '—'}\nffmpeg: ${info.ffmpeg || '—'}`;
+
+        const banner = byId('toolsBanner');
+        if (banner) {
+            if (ok) {
+                banner.hidden = true;
+                banner.replaceChildren();
+            } else {
+                banner.replaceChildren(
+                    el('div', { class: 'banner-title' }, t('toolsBannerTitle')),
+                    el('div', { class: 'banner-body' }, t('toolsBannerBody')),
+                );
+                banner.hidden = false;
+            }
+        }
     } catch { /* ignore */ }
 }
 
@@ -430,7 +450,9 @@ function onDone(d) {
 function onError(d) {
     const j = jobs.get(d.jobId);
     if (!j) return;
-    j.panel.replaceChildren(el('div', { class: 'done err' }, t('errorPrefix') + (d.message || t('unknown'))));
+    const msg = d.message || t('unknown');
+    const text = /\b403\b/.test(msg) ? t('error403') : (t('errorPrefix') + msg);
+    j.panel.replaceChildren(el('div', { class: 'done err' }, text));
     jobs.delete(d.jobId);
 }
 

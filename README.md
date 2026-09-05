@@ -13,6 +13,9 @@ project — right inside Resolve.
 > Service and copyright. Only download material you have the rights to (your own,
 > Creative Commons, or licensed). You are responsible for how you use this tool.
 
+> 🧩 **Before it works you must install two free command-line tools — `yt-dlp` and `ffmpeg`**
+> (see **Requirements** below). The plugin shows a red banner if they are missing.
+
 *Interface is English by default with an EN/PL switch. — Interfejs po angielsku, z przełącznikiem EN/PL. **Polski opis niżej.***
 
 ---
@@ -36,6 +39,9 @@ remembered between launches, just like the language.
   - macOS: `brew install yt-dlp ffmpeg`
   - Windows: `winget install yt-dlp.yt-dlp` and `winget install Gyan.FFmpeg`
     (or `scoop install yt-dlp ffmpeg`)
+
+> **Keep `yt-dlp` up to date.** YouTube changes often, and an outdated yt-dlp causes
+> `HTTP 403` download errors. Update with `yt-dlp -U` (Windows) or `brew upgrade yt-dlp` (macOS).
 
 ### Install — macOS
 ```bash
@@ -74,6 +80,32 @@ It's an Electron app loaded by Resolve. The main process runs `yt-dlp`/`ffmpeg` 
 the backend over a `contextBridge` IPC. Note: video downloads fetch two streams
 (video, then audio) and merge them, so the progress bar fills twice.
 
+### Uninstall
+Delete the plugin folder, then restart DaVinci Resolve.
+
+**macOS:**
+```bash
+rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve/Workflow Integration Plugins/com.bartoszkwiatek.yt2resolve"
+```
+
+**Windows** (PowerShell):
+```powershell
+Remove-Item -Recurse -Force "$env:PROGRAMDATA\Blackmagic Design\DaVinci Resolve\Support\Workflow Integration Plugins\com.bartoszkwiatek.yt2resolve"
+```
+
+If you hit a permission error, add `sudo` (macOS) or run PowerShell as Administrator.
+
+`yt-dlp` and `ffmpeg` were installed separately — remove them with `brew uninstall yt-dlp ffmpeg`
+or `winget uninstall yt-dlp.yt-dlp` if you no longer need them. Files already downloaded to your
+Videos/Movies folder are left untouched.
+
+### Troubleshooting
+- **`HTTP 403 Forbidden` / "unable to download video data"** → your `yt-dlp` is out of date.
+  Update it: `yt-dlp -U` (Windows) or `brew upgrade yt-dlp` (macOS), then retry. (The plugin also
+  auto-retries once with a different YouTube player client.)
+- **Red "Extra tools required" banner / "tools missing"** → install `yt-dlp` and `ffmpeg`
+  (see Requirements).
+
 ### License
 MIT — see [LICENSE](LICENSE).
 
@@ -103,6 +135,9 @@ między uruchomieniami — tak jak język.
   - macOS: `brew install yt-dlp ffmpeg`
   - Windows: `winget install yt-dlp.yt-dlp` oraz `winget install Gyan.FFmpeg`
     (albo `scoop install yt-dlp ffmpeg`)
+
+> **Aktualizuj `yt-dlp`.** YouTube często coś zmienia, a nieaktualny yt-dlp powoduje błędy
+> `HTTP 403`. Zaktualizuj: `yt-dlp -U` (Windows) albo `brew upgrade yt-dlp` (macOS).
 
 ### Instalacja — macOS
 ```bash
@@ -140,6 +175,32 @@ przez `child_process` i importuje pliki przez API JavaScript Resolve
 (`WorkflowIntegration.GetResolve()`); interfejs działa w sandboxie i rozmawia z backendem
 przez mostek IPC (`contextBridge`). Uwaga: pobieranie wideo ściąga dwa strumienie (obraz,
 potem dźwięk) i je scala, więc pasek postępu wypełnia się dwa razy.
+
+### Odinstalowanie
+Usuń folder wtyczki i uruchom ponownie DaVinci Resolve.
+
+**macOS:**
+```bash
+rm -rf "/Library/Application Support/Blackmagic Design/DaVinci Resolve/Workflow Integration Plugins/com.bartoszkwiatek.yt2resolve"
+```
+
+**Windows** (PowerShell):
+```powershell
+Remove-Item -Recurse -Force "$env:PROGRAMDATA\Blackmagic Design\DaVinci Resolve\Support\Workflow Integration Plugins\com.bartoszkwiatek.yt2resolve"
+```
+
+Jeśli dostaniesz błąd uprawnień, dodaj `sudo` (macOS) albo uruchom PowerShell jako Administrator.
+
+`yt-dlp` i `ffmpeg` instalowałeś osobno — usuń je przez `brew uninstall yt-dlp ffmpeg`
+albo `winget uninstall yt-dlp.yt-dlp`, jeśli już ich nie potrzebujesz. Pliki pobrane wcześniej
+do folderu Wideo/Filmy zostają nietknięte.
+
+### Rozwiązywanie problemów
+- **`HTTP 403 Forbidden` / „unable to download video data"** → `yt-dlp` jest nieaktualny.
+  Zaktualizuj: `yt-dlp -U` (Windows) albo `brew upgrade yt-dlp` (macOS) i spróbuj ponownie.
+  (Wtyczka próbuje też automatycznie raz jeszcze z innym klientem YouTube.)
+- **Czerwony baner „Wymagane dodatkowe programy" / „brak narzędzi"** → zainstaluj `yt-dlp` i `ffmpeg`
+  (patrz Wymagania).
 
 ### Licencja
 MIT — zobacz [LICENSE](LICENSE).

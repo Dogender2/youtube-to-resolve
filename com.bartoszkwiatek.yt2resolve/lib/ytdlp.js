@@ -154,29 +154,32 @@ function lineSplitter(onLine) {
     };
 }
 
-// Pobiera do destDir. onProgress({percent,percentStr,speed,eta}). Zwraca Promise<ścieżka pliku>.
-function download(url, spec, destDir, onProgress) {
+// Buduje wspólne argumenty dla jednego podejścia pobierania.
+function buildDownloadArgs(outtmpl, extraArgs) {
+    // UWAGA: samo --print wycisza yt-dlp; --progress + --no-simulate przywraca postęp.
+    const args = [
+        '--no-warnings', '--newline', '--no-playlist', '--no-simulate', '--progress',
+        '--retries', '10', '--fragment-retries', '10', '--extractor-retries', '3',
+        '-o', outtmpl,
+        '--progress-template',
+        'download:@@P@@%(progress._percent_str)s|%(progress._speed_str)s|%(progress._eta_str)s',
+        '--print', 'after_move:@@FILE@@%(filepath)s',
+    ];
+    const fdir = ffmpegDir();
+    if (fdir) args.push('--ffmpeg-location', fdir);
+    if (extraArgs) args.push(...extraArgs);
+    return args;
+}
+
+function looksLike403(text) {
+    return /403|forbidden|unable to download video data/i.test(text || '');
+}
+
+// Jedno uruchomienie yt-dlp. Zwraca Promise<{ code, finalPath, tail }>.
+function runYtdlpOnce(yt, args, onProgress) {
     return new Promise((resolve, reject) => {
-        let yt;
-        try { yt = requireYtdlp(); } catch (e) { return reject(e); }
-        fs.mkdirSync(destDir, { recursive: true });
-        const outtmpl = path.join(destDir, '%(title).150B [%(id)s].%(ext)s');
-
-        // UWAGA: samo --print wycisza yt-dlp; --progress + --no-simulate przywraca postęp.
-        const args = [
-            '--no-warnings', '--newline', '--no-playlist', '--no-simulate', '--progress',
-            '-o', outtmpl,
-            '--progress-template',
-            'download:@@P@@%(progress._percent_str)s|%(progress._speed_str)s|%(progress._eta_str)s',
-            '--print', 'after_move:@@FILE@@%(filepath)s',
-        ];
-        const fdir = ffmpegDir();
-        if (fdir) args.push('--ffmpeg-location', fdir);
-        args.push(...buildFormatArgs(spec), url);
-
         let finalPath = null;
-        let lastLine = '';
-
+        const tail = [];
         const onLine = (raw) => {
             const line = raw.replace(ANSI, '');
             if (line.startsWith('@@FILE@@')) {
@@ -185,24 +188,43 @@ function download(url, spec, destDir, onProgress) {
                 const pu = parseProgress(line);
                 if (pu && onProgress) onProgress(pu);
             } else if (line.trim()) {
-                lastLine = line.trim();
+                tail.push(line.trim());
+                if (tail.length > 8) tail.shift();
             }
         };
-
         const child = spawn(yt, args);
         child.stdout.on('data', lineSplitter(onLine));
         child.stderr.on('data', lineSplitter(onLine));
         child.on('error', (err) => reject(err));
-        child.on('close', (code) => {
-            if (code !== 0) {
-                return reject(new Error(`yt-dlp zakończył się kodem ${code}. ${lastLine}`));
-            }
-            if (!finalPath) {
-                return reject(new Error('Pobrano, ale nie udało się ustalić ścieżki pliku.'));
-            }
-            resolve(finalPath);
-        });
+        child.on('close', (code) => resolve({ code, finalPath, tail: tail.join(' | ') }));
     });
+}
+
+// Pobiera do destDir. onProgress({percent,percentStr,speed,eta}). Zwraca Promise<ścieżka pliku>.
+async function download(url, spec, destDir, onProgress) {
+    const yt = requireYtdlp();
+    fs.mkdirSync(destDir, { recursive: true });
+    const outtmpl = path.join(destDir, '%(title).150B [%(id)s].%(ext)s');
+    const formatArgs = buildFormatArgs(spec);
+
+    let res = await runYtdlpOnce(yt, [...buildDownloadArgs(outtmpl, null), ...formatArgs, url], onProgress);
+
+    // Częsty workaround na HTTP 403: wymuś inny klient odtwarzacza YouTube i spróbuj jeszcze raz.
+    if (res.code !== 0 && looksLike403(res.tail)) {
+        const extra = ['--extractor-args', 'youtube:player_client=web_safari,tv,web'];
+        res = await runYtdlpOnce(yt, [...buildDownloadArgs(outtmpl, extra), ...formatArgs, url], onProgress);
+    }
+
+    if (res.code !== 0) {
+        if (looksLike403(res.tail)) {
+            throw new EngineError('HTTP 403 Forbidden — yt-dlp is out of date. Update it (see README) and try again.');
+        }
+        throw new EngineError(`yt-dlp exited with code ${res.code}. ${res.tail}`);
+    }
+    if (!res.finalPath) {
+        throw new EngineError('Downloaded, but could not determine the output file path.');
+    }
+    return res.finalPath;
 }
 
 module.exports = {

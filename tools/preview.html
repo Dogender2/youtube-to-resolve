@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Podgląd UI — YouTube → Resolve</title>
-    <link rel="stylesheet" href="../com.bartoszkwiatek.yt2resolve/css/styles.css?v=9">
+    <link rel="stylesheet" href="../com.bartoszkwiatek.yt2resolve/css/styles.css?v=11">
 </head>
 <body>
     <header class="topbar">
@@ -26,6 +26,8 @@
         <input id="searchInput" type="text" data-i18n-ph="searchPh" placeholder="Search YouTube&hellip;" autocomplete="off" spellcheck="false">
         <button id="searchBtn" class="btn btn-primary" data-i18n="searchBtn">Search</button>
     </section>
+
+    <div id="toolsBanner" class="banner" hidden></div>
 
     <section id="settings" class="settings">
         <div class="set-row">
@@ -85,7 +87,7 @@
             },
         };
     </script>
-    <script src="../com.bartoszkwiatek.yt2resolve/renderer.js?v=9"></script>
+    <script src="../com.bartoszkwiatek.yt2resolve/renderer.js?v=11"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {

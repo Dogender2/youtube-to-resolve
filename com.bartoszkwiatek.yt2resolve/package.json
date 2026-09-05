@@ -1,6 +1,6 @@
 {
     "name": "yt2resolve",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "YouTube -> DaVinci Resolve Workflow Integration Plugin",
     "main": "main.js",
     "scripts": {

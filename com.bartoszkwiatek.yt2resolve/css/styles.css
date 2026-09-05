@@ -118,6 +118,19 @@ body::before {
 .searchbar input::placeholder { color: var(--muted); }
 .searchbar input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 18px var(--glow-soft); }
 
+/* ---------- Baner brakujących narzędzi ---------- */
+.banner {
+    flex: 0 0 auto;
+    margin: 0 14px 6px;
+    padding: 10px 12px;
+    border: 1px solid var(--err);
+    border-radius: var(--radius);
+    background: rgba(229,148,132,.08);
+    box-shadow: 0 0 14px rgba(229,148,132,.15);
+}
+.banner-title { font-family: var(--mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--err); }
+.banner-body { font-family: var(--mono); font-size: 11px; color: var(--text); margin-top: 6px; white-space: pre-line; line-height: 1.55; }
+
 /* ---------- Buttons ---------- */
 .btn {
     font-family: var(--mono);
