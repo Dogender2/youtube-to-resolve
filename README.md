@@ -105,6 +105,10 @@ Videos/Movies folder are left untouched.
   auto-retries once with a different YouTube player client.)
 - **Red "Extra tools required" banner / "tools missing"** → install `yt-dlp` and `ffmpeg`
   (see Requirements).
+- **"Downloaded, but import failed" (Windows)** → usually antivirus briefly locking the freshly
+  written file. The plugin now waits for the file and retries a few times; if it still happens,
+  add your download folder to **Windows Defender exclusions** (or pick a download folder that isn't
+  real-time scanned).
 
 ### License
 MIT — see [LICENSE](LICENSE).
@@ -201,6 +205,10 @@ do folderu Wideo/Filmy zostają nietknięte.
   (Wtyczka próbuje też automatycznie raz jeszcze z innym klientem YouTube.)
 - **Czerwony baner „Wymagane dodatkowe programy" / „brak narzędzi"** → zainstaluj `yt-dlp` i `ffmpeg`
   (patrz Wymagania).
+- **„Pobrano, ale import się nie udał" (Windows)** → zwykle antywirus na moment blokuje świeżo
+  zapisany plik. Wtyczka teraz czeka na plik i ponawia kilka razy; jeśli nadal się zdarza, dodaj
+  folder pobierania do **wykluczeń Windows Defender** (albo ustaw folder poza skanowaniem w czasie
+  rzeczywistym).
 
 ### Licencja
 MIT — zobacz [LICENSE](LICENSE).

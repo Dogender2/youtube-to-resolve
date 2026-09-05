@@ -6,6 +6,7 @@
 const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 const WorkflowIntegration = require('./WorkflowIntegration.node');
 const ytdlp = require('./lib/ytdlp');
 
@@ -41,7 +42,36 @@ async function currentProjectName() {
     }
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Czeka, aż plik istnieje i jego rozmiar się ustabilizuje.
+// Na Windows antywirus/OS potrafi chwilowo trzymać świeżo zapisany plik (zwłaszcza po scaleniu ffmpeg).
+async function waitForStableFile(filePath, tries = 25, intervalMs = 200) {
+    let lastSize = -1;
+    for (let i = 0; i < tries; i++) {
+        try {
+            const size = fs.statSync(filePath).size;
+            if (size > 0 && size === lastSize) return true; // rozmiar się nie zmienił = plik gotowy
+            lastSize = size;
+        } catch { /* pliku jeszcze nie ma */ }
+        await sleep(intervalMs);
+    }
+    return fs.existsSync(filePath);
+}
+
+async function importMediaOnce(mediaPool, resolve, filePath) {
+    let items = await mediaPool.ImportMedia([filePath]);
+    if (!items || items.length === 0) {
+        // fallback: MediaStorage.AddItemListToMediaPool
+        const ms = await resolve.GetMediaStorage();
+        if (ms) items = await ms.AddItemListToMediaPool([filePath]);
+    }
+    return Array.isArray(items) ? items.length : (items ? 1 : 0);
+}
+
 // Import pliku do bieżącego projektu (opcjonalnie do wskazanego bina).
+// Import bywa zawodny tuż po pobraniu (świeży plik blokowany przez AV/OS), więc czekamy na
+// stabilny plik i ponawiamy kilka razy — to eliminuje losowe "pobrano, ale nie zaimportowano".
 async function importToResolve(filePath, binName) {
     const resolve = await getResolve();
     const proj = await getCurrentProject();
@@ -58,15 +88,22 @@ async function importToResolve(filePath, binName) {
         if (target) await mediaPool.SetCurrentFolder(target);
     }
 
-    // Preferujemy ImportMedia; w razie czego próbujemy MediaStorage.AddItemListToMediaPool.
-    let items = await mediaPool.ImportMedia([filePath]);
-    if (!items || items.length === 0) {
-        const ms = await resolve.GetMediaStorage();
-        if (ms) items = await ms.AddItemListToMediaPool([filePath]);
+    await waitForStableFile(filePath);
+
+    let lastErr = null;
+    for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+            const count = await importMediaOnce(mediaPool, resolve, filePath);
+            if (count > 0) return count;
+        } catch (err) {
+            lastErr = err;
+        }
+        await sleep(500);
     }
-    const count = Array.isArray(items) ? items.length : (items ? 1 : 0);
-    if (count === 0) throw new Error('Resolve nie zaimportował pliku (format lub ścieżka?).');
-    return count;
+    throw new Error(
+        'Resolve did not import the file after several tries (antivirus lock, or path/format issue). '
+        + (lastErr ? String(lastErr.message || lastErr) : ''),
+    );
 }
 
 // ---------- Katalog pobierania ----------
